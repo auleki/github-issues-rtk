@@ -75,7 +75,6 @@ const App: React.FC = () => {
       </React.Fragment>
     )
   } else if (issueId !== null) {
-    // const { issueId } = currentDisplay
     const key = `${org}/${repo}/${issueId}`
     content = (
       <IssueDetailsPage

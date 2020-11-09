@@ -1,4 +1,4 @@
-import { combineReducers } from 'redux-toolkit';
+import { combineReducers } from '@reduxjs/toolkit';
 import issuesDisplayReducer from '../features/issuesDisplay/issuesDisplaySlice'
 
 const rootReducer = combineReducers({
