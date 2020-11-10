@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react'
+// import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchIssuesCount } from 'features/repoSearch/repoDetailsSlice'
-import { getIssues, IssuesResult } from 'api/githubAPI'
+// import { getIssues, IssuesResult } from 'api/githubAPI'
 import { RootState } from 'app/rootReducer';
 import { IssuesPageHeader } from './IssuesPageHeader'
 import { IssuesList } from './IssuesList'
 import { IssuePagination, OnPageChangeCallback } from './IssuePagination'
+
+import { fetchIssues } from "./issuesSlice";
 
 interface ILProps {
   org: string
@@ -23,51 +26,33 @@ export const IssuesListPage = ({
   showIssueComments
 }: ILProps) => {
   const dispatch = useDispatch()
-  const [issuesResult, setIssues] = useState<IssuesResult>({
-    pageLinks: null,
-    pageCount: 1,
-    issues: []
-  })
-  // const [numIssues, setNumIssues] = useState<number>(-1)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [issuesError, setIssuesError] = useState<Error | null>(null)
+  // const [issuesResult, setIssues] = useState<IssuesResult>({
+  //   pageLinks: null,
+  //   pageCount: 1,
+  //   issues: []
+  // })
+  // // const [numIssues, setNumIssues] = useState<number>(-1)
+  // const [isLoading, setIsLoading] = useState<boolean>(false)
+  // const [issuesError, setIssuesError] = useState<Error | null>(null)
+
+  const { 
+    currentPageIssues, 
+    isLoading, 
+    error: issuesError, 
+    issuesByNumber, 
+    pageCount } = useSelector((state: RootState) => state.issues)
 
   const openIssueCount = useSelector(
     (state: RootState) => state.repoDetails.openIssuesCount)
   
 
-  const { issues, pageCount } = issuesResult
-
+  // const { issues, pageCount } = issuesResult
+     
   useEffect(() => {
-    async function fetchEverything() {
-      async function fetchIssues() {
-        const issuesResult = await getIssues(org, repo, page)
-        setIssues(issuesResult)
-      }
+        
+    dispatch(fetchIssues(org, repo, page))
+    dispatch(fetchIssuesCount(org, repo))
 
-      // async function fetchIssueCount() {
-      //   const repoDetails = await getRepoDetails(org, repo)
-      //   setNumIssues(repoDetails.open_issues_count)
-      // }
-
-      try {
-        // await Promise.all([fetchIssues(), fetchIssueCount()])
-        await Promise.all([
-          fetchIssues(),
-          dispatch(fetchIssuesCount(org, repo))
-        ])
-        setIssuesError(null)
-      } catch (err) {
-        console.error(err)
-        setIssuesError(err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    setIsLoading(true)
-
-    fetchEverything()
   }, [org, repo, page, dispatch])
 
   if (issuesError) {
