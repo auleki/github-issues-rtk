@@ -46,10 +46,10 @@ export const IssuesListPage = ({
     (state: RootState) => state.repoDetails.openIssuesCount)
   
 
-  // const { issues, pageCount } = issuesResult
-     
+  const issues = currentPageIssues.map(issueNumber => issuesByNumber[issueNumber])
+
   useEffect(() => {
-        
+
     dispatch(fetchIssues(org, repo, page))
     dispatch(fetchIssuesCount(org, repo))
 
