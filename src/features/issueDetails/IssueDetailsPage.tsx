@@ -26,10 +26,17 @@ export const IssueDetailsPage = ({
   showIssuesList
 }: IDProps) => {
   const dispatch = useDispatch()
-  const issue = useSelector((state: RootState) => state.issues.issuesByNumber[issueId])
-  // const [issue, setIssue] = useState<Issue | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
-  // const [commentsError, setCommentsError] = useState<Error | null>(null)
+  const issue = useSelector((state: RootState) => state.issues.issuesByNumber[issueId])
+
+  // const { commentsLoading, commentsError, comments } = useSelector(
+  //   (state: RootState) => {
+  //     return {
+  //       commentsLoading: state.
+  //     }
+  //   })
+
+    
 
   useEffect(() => {
     if (!issue) {
