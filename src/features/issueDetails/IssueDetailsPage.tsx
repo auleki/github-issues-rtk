@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import ReactMarkdown from 'react-markdown'
 import classnames from 'classnames'
 import { insertMentionLinks } from 'utils/stringUtils'
@@ -9,6 +9,7 @@ import { IssueMeta } from './IssueMeta'
 import { IssueComments } from './IssueComments'
 import { RootState } from "app/rootReducer";
 import { fetchIssue } from "../issuesList/issuesSlice";
+import { fetchComments } from "./commentsSlice";
 import styles from './IssueDetailsPage.module.css'
 import './IssueDetailsPage.css'
 
@@ -26,15 +27,19 @@ export const IssueDetailsPage = ({
   showIssuesList
 }: IDProps) => {
   const dispatch = useDispatch()
-  const [comments, setComments] = useState<Comment[]>([])
+  // const [comments, setComments] = useState<Comment[]>([])
   const issue = useSelector((state: RootState) => state.issues.issuesByNumber[issueId])
 
-  // const { commentsLoading, commentsError, comments } = useSelector(
-  //   (state: RootState) => {
-  //     return {
-  //       commentsLoading: state.
-  //     }
-  //   })
+  const { commentsLoading, commentsError, comments } = useSelector(
+    (state: RootState) => {
+      return {
+        commentsLoading: state.comments.loading,
+        commentsError: state.comments.error,
+        comments: state.comments.commentsByIssue
+      }
+    }, 
+    shallowEqual
+    )
 
     
 
@@ -46,16 +51,12 @@ export const IssueDetailsPage = ({
     window.scrollTo({ top: 0 })
   }, [org, repo, issueId, issue, dispatch])
 
-  useEffect(() => {
-    async function fetchComments() {
-      if (issue !== null) {
-        const comments = await getComments(issue.comments_url)
-        setComments(comments)
-      }
-    }
 
-    fetchComments()
-  }, [issue])
+  useEffect(() => {    
+    if(issue) {
+      dispatch(fetchComments(issue))
+    }
+  }, [issue, dispatch])
 
   let content
 
@@ -65,15 +66,15 @@ export const IssueDetailsPage = ({
     </button>
   )
 
-  if (commentsError) {
-    return (
-      <div className="issue-detail--error">
-        {backToIssueListButton}
-        <h1>There was a problem loading issue #{issueId}</h1>
-        <p>{commentsError.toString()}</p>
-      </div>
-    )
-  }
+  // if (commentsError) {
+  //   return (
+  //     <div className="issue-detail--error">
+  //       {backToIssueListButton}
+  //       <h1>There was a problem loading issue #{issueId}</h1>
+  //       <p>{commentsError.toString()}</p>
+  //     </div>
+  //   )
+  // }
 
   if (issue === null) {
     content = (
@@ -83,7 +84,24 @@ export const IssueDetailsPage = ({
       </div>
     )
   } else {
-    let renderedComments = <IssueComments issue={issue} comments={comments} />
+    // let renderedComments = <IssueComments issue={issue} comments={comments} />
+    let renderedComments;
+    if (comments) {
+      renderedComments = <IssueComments issue={issue} comments={comments} />
+    } else if (commentsLoading) {
+      renderedComments = (
+        <div className="issue-details--loading">
+          <p>Loading comments...</p>
+        </div>
+      )
+    } else if (commentsError) {
+      renderedComments = (
+        <div className="issue-detail--error">
+          <h1>Could not load comments for #{ issueId }</h1>
+          <p>{ commentsError.toString() }</p>
+        </div>
+      )
+    }
 
     content = (
       <div className={classnames('issueDetailsPage', styles.issueDetailsPage)}>
