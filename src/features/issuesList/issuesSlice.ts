@@ -98,3 +98,4 @@ export const fetchIssue = (
     dispatch(getIssueFailure(error.toString()))
   }
 }
+
